@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
 
 export default function ProductCard({ product }) {
   const { addToCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
+  const isFavorite = isInWishlist(product.id);
   // Hàm hỗ trợ format tiền tệ chuẩn VNĐ
   const formatPrice = (price) => {
     return new Intl.NumberFormat("vi-VN", {
@@ -57,18 +60,30 @@ export default function ProductCard({ product }) {
               {formatPrice(product.price)}
             </span>
           </div>
-
-          {/* Gắn sự kiện onClick vào đây */}
-          <button
-            onClick={(e) => {
-              e.preventDefault(); // Mẹo UX: Ngăn chặn click lan truyền (phòng hờ ông bọc thẻ Link bên ngoài sau này)
-              addToCart(product);
-            }}
-            className="bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white p-2.5 rounded-lg transition-colors focus:ring-2 focus:ring-blue-300"
-            title="Thêm vào giỏ hàng"
-          >
-            🛒
-          </button>
+          {/* Cụm nút Yêu thích  */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={(e) => {
+                e.preventDefault(); // Ngăn chặn nhảy trang
+                toggleWishlist(product);
+              }}
+              className={`p-2.5 rounded-lg transition-colors border ${isFavorite ? "bg-red-50 text-red-500 border-red-100" : "bg-gray-50 text-gray-400 border-gray-100 hover:text-red-500 hover:bg-red-50"} focus:outline-none focus:ring-2 focus:ring-red-200`}
+              title={isFavorite ? "Bỏ yêu thích" : "Thêm vào yêu thích"}
+            >
+              {isFavorite ? "❤️" : "🤍"}
+            </button>
+            {/* Gắn sự kiện onClick vào đây */}
+            <button
+              onClick={(e) => {
+                e.preventDefault(); // Mẹo UX: Ngăn chặn click lan truyền (phòng hờ ông bọc thẻ Link bên ngoài sau này)
+                addToCart(product);
+              }}
+              className="bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white p-2.5 rounded-lg transition-colors focus:ring-2 focus:ring-blue-300"
+              title="Thêm vào giỏ hàng"
+            >
+              🛒
+            </button>
+          </div>
         </div>
       </div>
     </div>

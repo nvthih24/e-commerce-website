@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 
 export default function Header() {
   const { totalItems } = useCart();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
@@ -41,15 +41,12 @@ export default function Header() {
                 alt="Avatar"
                 className="w-8 h-8 rounded-full shadow-sm"
               />
-              <span className="hidden sm:block font-medium text-gray-700">
-                Chào, {user.name}
-              </span>
-              <button
-                onClick={logout}
-                className="text-sm text-red-500 hover:text-red-700 font-medium ml-2 border-l border-gray-200 pl-4"
+              <Link
+                to="/account"
+                className="hidden sm:block font-medium text-gray-700 hover:text-blue-600 transition-colors"
               >
-                Đăng xuất
-              </button>
+                Chào, {user.name}
+              </Link>
             </div>
           ) : (
             <Link
