@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
+import { useWishlist } from "../context/WishlistContext";
 
 export default function Header() {
   const { totalItems } = useCart();
@@ -21,6 +22,13 @@ export default function Header() {
             className="text-gray-700 hover:text-blue-600 font-medium transition hidden sm:block"
           >
             Trang Chủ
+          </Link>
+          <Link
+            to="/wishlist"
+            className="text-gray-700 hover:text-green-600 font-medium transition flex items-center gap-1 inline-flex"
+          >
+            <span>Yêu Thích</span>
+            {   }
           </Link>
           <Link
             to="/cart"
