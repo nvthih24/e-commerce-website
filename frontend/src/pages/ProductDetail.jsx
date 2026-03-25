@@ -1,28 +1,16 @@
 import { useParams, Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { mockProducts } from '../data/mockData';
 
 export default function ProductDetail() {
   const { id } = useParams(); // Lấy ID sản phẩm từ URL
   const { addToCart } = useCart();
-  // Dữ liệu giả lập chi tiết 1 sản phẩm (sau này gọi API J2EE ở đây)
-  const product = {
-    id: id,
-    name: "Laptop Gaming Acer Nitro 5 Tiger (Intel Core i5)",
-    price: 21990000,
-    oldPrice: 24990000,
-    discount: 12,
-    image:
-      "https://images.unsplash.com/photo-1593640408182-31c70c8268f5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    description:
-      "Chiếc laptop gaming quốc dân với cấu hình mạnh mẽ, hệ thống tản nhiệt thế hệ mới giúp bạn chiến mượt mọi tựa game eSports và AAA hiện nay.",
-    specs: [
-      { label: "CPU", value: "Intel Core i5 12500H" },
-      { label: "RAM", value: "8GB DDR4 3200MHz" },
-      { label: "Ổ cứng", value: "512GB SSD NVMe" },
-      { label: "Card đồ họa", value: "RTX 3050 4GB" },
-      { label: "Màn hình", value: '15.6" FHD 144Hz' },
-    ],
-  };
+
+  const product = mockProducts.find(p => p.id === parseInt(id));
+
+    if (!product) {
+        return <div className="text-center py-20 text-2xl font-bold">Không tìm thấy sản phẩm! 😥</div>;
+    }
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat("vi-VN", {

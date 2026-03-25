@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useWishlist } from "../context/WishlistContext";
 import ProductCard from "../components/ProductCard";
 import { useForm } from "react-hook-form";
@@ -8,8 +8,16 @@ import { toast } from "react-hot-toast";
 
 export default function Account() {
   const { user, login, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState("profile");
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState(location.state?.tab || 'profile');
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
+  useEffect(() => {
+      if (location.state?.tab) {
+        setActiveTab(location.state.tab);
+      }
+    }, [location.state]);
+
   const { wishlist } = useWishlist();
 
   // Khởi tạo form với dữ liệu mặc định lấy từ user đang đăng nhập
@@ -86,8 +94,15 @@ export default function Account() {
     toast.success("Cập nhật thông tin cá nhân thành công! ✨");
   };
 
-  if (!user) {
-    return <Navigate to="/login" replace />;
+if (!user) {
+    return <Navigate
+      to="/login"
+      replace
+      state={{
+        from: location.pathname,
+        tab: location.state?.tab // Giữ lại thông tin tab (VD: 'wishlist')
+      }}
+    />;
   }
 
   return (

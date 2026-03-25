@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
@@ -7,6 +7,7 @@ import { useAuth } from "../context/AuthContext";
 export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
 
   // Khởi tạo React Hook Form
@@ -31,7 +32,8 @@ export default function Login() {
       login(mockUserData); // Lưu vào Global State
 
       toast.success("Đăng nhập thành công! 🎉");
-      setTimeout(() => navigate("/"), 1000);
+      const destination = location.state?.from || '/';
+      setTimeout(() => navigate(destination, { state: location.state }), 1000);
     } else {
       // Logic đăng ký giữ nguyên
       toast.success("Đăng ký tài khoản thành công! 🚀");

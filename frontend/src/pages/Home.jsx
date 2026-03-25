@@ -1,75 +1,135 @@
-import ProductCard from "../components/ProductCard";
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import ProductCard from '../components/ProductCard';
+import { mockProducts, categories } from '../data/mockData';
 
-// Dữ liệu giả (Mock Data) để test UI
-const mockProducts = [
+// Dữ liệu giả cho Banner quảng cáo
+const mockBanners = [
   {
     id: 1,
-    name: "Laptop Gaming Acer Nitro 5 Tiger (Intel Core i5)",
-    price: 21990000,
-    oldPrice: 24990000,
-    discount: 12,
-    image:
-      "https://images.unsplash.com/photo-1593640408182-31c70c8268f5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+    image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=2000&auto=format&fit=crop',
+    title: 'SIÊU TỐC ĐỘ - Laptop Gaming Giảm Tới 30%'
   },
   {
     id: 2,
-    name: "Điện thoại iPhone 15 Pro Max 256GB Titan Tự Nhiên",
-    price: 29500000,
-    oldPrice: 34990000,
-    discount: 15,
-    image:
-      "https://images.unsplash.com/photo-1695048133142-1a20484d2569?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+    image: 'https://images.unsplash.com/photo-1605236453806-6ff36851218e?q=80&w=2000&auto=format&fit=crop',
+    title: 'TUẦN LỄ APPLE - Mua iPhone Tặng AirPods'
   },
   {
     id: 3,
-    name: "Tai nghe Bluetooth Apple AirPods Pro Gen 2",
-    price: 5490000,
-    oldPrice: null,
-    discount: 0,
-    image:
-      "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    id: 4,
-    name: "Chuột Không Dây Logitech MX Master 3S",
-    price: 2450000,
-    oldPrice: 2800000,
-    discount: 12,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTpKNELrjEsGON2GkDCwqsJoP8vskHbbaYXyA&s",
-  },
+    image: 'https://images.unsplash.com/photo-1542744094-3a31f272c490?q=80&w=2000&auto=format&fit=crop',
+    title: 'PHỤ KIỆN CHÍNH HÃNG - Đồng Giá Từ 99K'
+  }
 ];
 
 export default function Home() {
+  const [currentBanner, setCurrentBanner] = useState(0);
+
+  // Hiệu ứng tự động chuyển Banner sau mỗi 4 giây
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentBanner((prev) => (prev === mockBanners.length - 1 ? 0 : prev + 1));
+    }, 4000);
+    return () => clearInterval(timer); // Xóa timer khi component bị hủy để tránh rò rỉ bộ nhớ
+  }, []);
+
+  // Các hàm điều khiển lật ảnh bằng tay
+  const nextBanner = () => setCurrentBanner(prev => prev === mockBanners.length - 1 ? 0 : prev + 1);
+  const prevBanner = () => setCurrentBanner(prev => prev === 0 ? mockBanners.length - 1 : prev - 1);
+
   return (
     <div className="pb-10">
-      {/* Banner Khuyến Mãi */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-10 mb-10 text-white flex flex-col items-center justify-center text-center shadow-lg">
-        <h1 className="text-4xl font-extrabold mb-4">
-          Tuần Lễ Công Nghệ - Giảm Sâu Tới 50%
-        </h1>
-        <p className="text-lg opacity-90 mb-6">
-          Săn ngay các thiết bị điện tử chính hãng với mức giá tốt nhất.
+
+      {/* 1. THANH TOP BANNER (Thông báo Sale Khủng) */}
+      <div className="bg-red-600 text-white text-center py-2 px-4 rounded-lg mb-4 flex items-center justify-center gap-2 shadow-sm relative overflow-hidden">
+        <span className="text-xl animate-pulse">🔥</span>
+        <p className="font-bold text-sm md:text-base whitespace-nowrap overflow-hidden text-ellipsis">
+          NGÀY HỘI CÔNG NGHỆ 2026 - NHẬP MÃ <span className="text-yellow-300 font-black">TECH100</span> ĐỂ GIẢM NGAY 100K CHO ĐƠN TỪ 1 TRIỆU!
         </p>
-        <button className="bg-white text-blue-700 font-bold py-2 px-6 rounded-full hover:bg-gray-100 transition-colors">
-          Khám Phá Ngay
-        </button>
+        <span className="text-xl animate-pulse">🔥</span>
       </div>
 
-      {/* Khu vực danh sách sản phẩm */}
+      {/* 2. SLIDER BANNER CHÍNH */}
+      <div className="relative w-full h-48 md:h-80 lg:h-[400px] rounded-2xl overflow-hidden shadow-lg mb-8 group bg-gray-100">
+
+        {/* Khung chứa các ảnh (Sẽ trượt ngang) */}
+        <div
+          className="flex h-full transition-transform duration-700 ease-in-out"
+          style={{ transform: `translateX(-${currentBanner * 100}%)` }}
+        >
+          {mockBanners.map((banner) => (
+            <div key={banner.id} className="min-w-full h-full relative">
+              <img src={banner.image} alt={banner.title} className="w-full h-full object-cover object-center" />
+              {/* Lớp phủ đen Gradient mờ từ dưới lên để làm nổi bật chữ */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6 md:p-10">
+                <h2 className="text-white text-2xl md:text-4xl lg:text-5xl font-black mb-2 shadow-black drop-shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+                  {banner.title}
+                </h2>
+                <button className="bg-white text-gray-900 px-6 py-2 rounded-full font-bold w-max mt-4 hover:bg-blue-600 hover:text-white transition-colors shadow-lg">
+                  Khám Phá Ngay &rarr;
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Nút Bấm Sang Trái / Phải (Chỉ hiện khi rê chuột vào banner) */}
+        <button
+          onClick={prevBanner}
+          className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 bg-white/30 hover:bg-white backdrop-blur-sm text-gray-800 rounded-full flex items-center justify-center text-xl opacity-0 group-hover:opacity-100 transition-all shadow-md"
+        >
+          &#10094;
+        </button>
+        <button
+          onClick={nextBanner}
+          className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 bg-white/30 hover:bg-white backdrop-blur-sm text-gray-800 rounded-full flex items-center justify-center text-xl opacity-0 group-hover:opacity-100 transition-all shadow-md"
+        >
+          &#10095;
+        </button>
+
+        {/* Dấu chấm điều hướng (Indicators) ở dưới cùng */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+          {mockBanners.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentBanner(index)}
+              className={`transition-all duration-300 rounded-full ${currentBanner === index ? 'bg-white w-8 h-2.5' : 'bg-white/50 w-2.5 h-2.5 hover:bg-white/80'}`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* HÀNG NÚT DANH MỤC (Category Pills) */}
+      <div className="mb-12">
+        <h2 className="text-xl font-bold text-gray-800 mb-6 text-center sm:text-left">Danh Mục Nổi Bật</h2>
+        <div className="flex flex-wrap justify-center sm:justify-start gap-4">
+          {categories.map((category) => (
+            <Link
+              key={category.id}
+              to={`/products?category=${category.id}`}
+              className="flex items-center gap-2 bg-white border border-gray-200 hover:border-blue-500 hover:text-blue-600 hover:shadow-md px-6 py-3.5 rounded-full font-medium text-gray-700 transition-all transform hover:-translate-y-1"
+            >
+              <span className="text-2xl">{category.icon}</span>
+              <span>{category.name}</span>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Khu vực danh sách sản phẩm nổi bật */}
       <div className="mb-6 flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-800">Sản Phẩm Nổi Bật</h2>
-        <a href="#" className="text-blue-600 hover:underline font-medium">
+        <Link to="/products" className="text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors">
           Xem tất cả &rarr;
-        </a>
+        </Link>
       </div>
 
-      {/* Grid Layout chia cột tự động (Responsive) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {mockProducts.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}
       </div>
+
     </div>
   );
 }
