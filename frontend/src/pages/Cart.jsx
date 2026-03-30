@@ -24,7 +24,7 @@ export default function Cart() {
   const { register, handleSubmit, formState: { errors }, reset } = useForm({
     defaultValues: {
       fullName: user?.name || '',
-      phone: '',
+      phone: user?.phone || '',
       address: '',
       paymentMethod: 'cod' // Mặc định thanh toán khi nhận hàng
     }
