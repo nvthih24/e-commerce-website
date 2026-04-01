@@ -23,16 +23,15 @@ export default function Login() {
           // 1. GỌI API ĐĂNG NHẬP
           // ==========================================
           const res = await axiosClient.post('/auth/login', {
-            username: data.phone, // Đẩy số ĐT vào trường username của Spring Boot
+            username: data.phone,
             password: data.password
           });
 
-          // Backend trả về: { "token": "eyJhbGciOi..." }
           const token = res.token;
 
           // Khởi tạo thông tin User để lưu vào Frontend
           const userData = {
-            name: data.phone, // Tạm dùng SĐT làm tên (Vì lúc login API ko trả về name)
+            name: data.phone,
             phone: data.phone,
             avatar: `https://ui-avatars.com/api/?name=${data.phone}&background=0D8ABC&color=fff`
           };
@@ -40,7 +39,6 @@ export default function Login() {
           login(userData, token); // Lưu vào Context
           toast.success('Đăng nhập thành công! 🎉');
 
-          // Điều hướng về trang cũ hoặc Trang chủ
           const destination = location.state?.from || '/';
           setTimeout(() => navigate(destination, { state: location.state }), 500);
 
@@ -49,16 +47,15 @@ export default function Login() {
           // 2. GỌI API ĐĂNG KÝ
           // ==========================================
           await axiosClient.post('/auth/register', {
-            username: data.phone, // Spring Boot bắt buộc có Username
+            username: data.phone,
             phone: data.phone,
             password: data.password,
-            // (Tùy chọn: Backend chưa có biến name, nhưng cứ gửi lên, Jackson sẽ tự bỏ qua)
             name: data.fullName
           });
 
           toast.success('Đăng ký thành công! Vui lòng đăng nhập lại. 🚀');
-          setIsLogin(true); // Đăng ký xong thì chuyển qua tab Đăng nhập
-          reset(); // Xóa sạch các ô nhập liệu
+          setIsLogin(true);
+          reset();
         }
 
       } catch (error) {
