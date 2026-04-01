@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
-import { mockProducts, categories } from '../data/mockData';
+import axiosClient from '../api/axiosClient';
 
 // Dữ liệu giả cho Banner quảng cáo
 const mockBanners = [
@@ -25,6 +25,30 @@ const mockBanners = [
 export default function Home() {
   const [currentBanner, setCurrentBanner] = useState(0);
 
+  const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+          try {
+            setIsLoading(true);
+            // Chạy song song 2 API lấy Products và Categories cho lẹ
+            const [productsData, categoriesData] = await Promise.all([
+              axiosClient.get('/products'),
+              axiosClient.get('/categories')
+            ]);
+            setProducts(productsData);
+            setCategories(categoriesData);
+          } catch (error) {
+            console.error("Lỗi lấy dữ liệu trang chủ:", error);
+          } finally {
+            setIsLoading(false);
+          }
+        };
+        fetchData();
+      }, []);
+
   // Hiệu ứng tự động chuyển Banner sau mỗi 4 giây
   useEffect(() => {
     const timer = setInterval(() => {
@@ -36,6 +60,15 @@ export default function Home() {
   // Các hàm điều khiển lật ảnh bằng tay
   const nextBanner = () => setCurrentBanner(prev => prev === mockBanners.length - 1 ? 0 : prev + 1);
   const prevBanner = () => setCurrentBanner(prev => prev === 0 ? mockBanners.length - 1 : prev - 1);
+
+  const getIconForCategory = (name) => {
+      const lowerName = name.toLowerCase();
+      if (lowerName.includes('laptop') || lowerName.includes('máy tính')) return '💻';
+      if (lowerName.includes('điện thoại') || lowerName.includes('phone')) return '📱';
+      if (lowerName.includes('âm thanh') || lowerName.includes('tai nghe')) return '🎧';
+      if (lowerName.includes('phụ kiện')) return '🖱️';
+      return '🏷️';
+    };
 
   return (
     <div className="pb-10">
@@ -99,37 +132,51 @@ export default function Home() {
         </div>
       </div>
 
-      {/* HÀNG NÚT DANH MỤC (Category Pills) */}
-      <div className="mb-12">
-        <h2 className="text-xl font-bold text-gray-800 mb-6 text-center sm:text-left">Danh Mục Nổi Bật</h2>
-        <div className="flex flex-wrap justify-center sm:justify-start gap-4">
-          {categories.map((category) => (
-            <Link
-              key={category.id}
-              to={`/products?category=${category.id}`}
-              className="flex items-center gap-2 bg-white border border-gray-200 hover:border-blue-500 hover:text-blue-600 hover:shadow-md px-6 py-3.5 rounded-full font-medium text-gray-700 transition-all transform hover:-translate-y-1"
-            >
-              <span className="text-2xl">{category.icon}</span>
-              <span>{category.name}</span>
-            </Link>
-          ))}
-        </div>
-      </div>
+     {/* HÀNG NÚT DANH MỤC LẤY TỪ API */}
+           <div className="mb-12">
+             <h2 className="text-xl font-bold text-gray-800 mb-6 text-center sm:text-left">Danh Mục Nổi Bật</h2>
+             <div className="flex flex-wrap justify-center sm:justify-start gap-4">
+               {categories.length > 0 ? (
+                 categories.map((category) => (
+                   <Link
+                     key={category.id}
+                     to={`/products?category=${category.id}`}
+                     className="flex items-center gap-2 bg-white border border-gray-200 hover:border-blue-500 hover:text-blue-600 hover:shadow-md px-6 py-3.5 rounded-full font-medium text-gray-700 transition-all transform hover:-translate-y-1"
+                   >
+                     <span className="text-2xl">{getIconForCategory(category.name)}</span>
+                     <span>{category.name}</span>
+                   </Link>
+                 ))
+               ) : (
+                  <p className="text-gray-400">Đang tải danh mục...</p>
+               )}
+             </div>
+           </div>
 
-      {/* Khu vực danh sách sản phẩm nổi bật */}
-      <div className="mb-6 flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800">Sản Phẩm Nổi Bật</h2>
-        <Link to="/products" className="text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors">
-          Xem tất cả &rarr;
-        </Link>
-      </div>
+           {/* DANH SÁCH SẢN PHẨM LẤY TỪ API */}
+           <div className="mb-6 flex justify-between items-center">
+             <h2 className="text-2xl font-bold text-gray-800">Sản Phẩm Nổi Bật</h2>
+             <Link to="/products" className="text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors">
+               Xem tất cả &rarr;
+             </Link>
+           </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {mockProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
+           {isLoading ? (
+             <div className="flex justify-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
+             </div>
+           ) : products.length > 0 ? (
+             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+               {products.map((product) => (
+                 <ProductCard key={product.id} product={product} />
+               ))}
+             </div>
+           ) : (
+             <div className="text-center py-20 bg-gray-50 rounded-2xl border border-gray-100 text-gray-500">
+                📭 Hiện chưa có sản phẩm nào trên Database của ông. Ông cần dùng Postman hoặc code giao diện Admin để thêm dữ liệu vào nhé!
+             </div>
+           )}
 
-    </div>
+         </div>
   );
 }

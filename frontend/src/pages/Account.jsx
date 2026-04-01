@@ -26,14 +26,14 @@ export default function Account() {
   const [addresses, setAddresses] = useState([
     {
       id: 1,
-      name: user?.name || 'Nguyễn Văn Thịnh',
+      fullName: user?.fullName || 'Nguyễn Văn Thịnh',
       phone: '0987654321',
       street: 'Trường ĐH HUTECH, Khu Công nghệ cao, Phường Long Thạnh Mỹ, TP. Thủ Đức, TP.HCM',
       isDefault: true
     },
     {
       id: 2,
-      name: user?.name || 'Nguyễn Văn Thịnh',
+      fullName: user?.fullName || 'Nguyễn Văn Thịnh',
       phone: '0912345678',
       street: '475A Điện Biên Phủ, Phường 25, Quận Bình Thạnh, TP.HCM',
       isDefault: false
@@ -43,14 +43,14 @@ export default function Account() {
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
 
   // State lưu trữ dữ liệu đang nhập trong Modal
-  const [addressForm, setAddressForm] = useState({ name: '', phone: '', street: '', isDefault: false });
+  const [addressForm, setAddressForm] = useState({ fullName: '', phone: '', street: '', isDefault: false });
 
   // State cờ hiệu: null = Thêm mới, có ID = Đang cập nhật
   const [editingId, setEditingId] = useState(null);
 
 const { register, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {
-      fullName: user?.name || '',
+      fullName: user?.fullName || '',
       phone: user?.phone || '0987654321', // Lấy sđt từ Context
       email: user?.email || '', // Email giờ có thể rỗng
     }
@@ -58,14 +58,14 @@ const { register, handleSubmit, formState: { errors } } = useForm({
 
 const onSubmitProfile = (data) => {
     // Lưu lại Tên và Email mới, số điện thoại không đổi
-    login({ ...user, name: data.fullName, email: data.email });
+    login({ ...user, fullName: data.fullName, email: data.email });
     toast.success('Cập nhật hồ sơ thành công! ✨');
   };
 
   // Hàm mở Modal để THÊM MỚI
   const openAddModal = () => {
     setEditingId(null); // Báo là đang thêm mới
-    setAddressForm({ name: '', phone: '', street: '', isDefault: false }); // Xóa trắng form
+    setAddressForm({ fullName: '', phone: '', street: '', isDefault: false }); // Xóa trắng form
     setIsAddressModalOpen(true);
   };
 
@@ -80,7 +80,7 @@ const onSubmitProfile = (data) => {
   const closeAddressModal = () => {
     setIsAddressModalOpen(false);
     setEditingId(null);
-    setAddressForm({ name: '', phone: '', street: '', isDefault: false });
+    setAddressForm({ fullName: '', phone: '', street: '', isDefault: false });
   };
 
   // Hàm xử lý Lưu (Gộp chung logic Thêm mới và Cập nhật)
@@ -171,7 +171,7 @@ const onSubmitProfile = (data) => {
               <img src={user.avatar} alt="Avatar" className="w-16 h-16 rounded-full shadow-sm border border-gray-100 bg-gray-50" />
               <div>
                 <p className="text-gray-500 text-sm mb-1">Tài khoản của</p>
-                <h3 className="font-bold text-gray-800 text-lg leading-none">{user.name}</h3>
+                <h3 className="font-bold text-gray-800 text-lg leading-none">{user.fullName}</h3>
               </div>
             </div>
             <nav className="space-y-2">
@@ -258,7 +258,7 @@ const onSubmitProfile = (data) => {
                       <div key={addr.id} className="p-5 border border-gray-200 rounded-2xl bg-white hover:border-blue-300 transition-colors flex flex-col md:flex-row justify-between gap-4">
                         <div>
                           <div className="flex items-center gap-3 mb-2">
-                            <span className="font-bold text-gray-800 border-r border-gray-300 pr-3">{addr.name}</span>
+                            <span className="font-bold text-gray-800 border-r border-gray-300 pr-3">{addr.fullName}</span>
                             <span className="text-gray-600">{addr.phone}</span>
                           </div>
                           <p className="text-gray-600 text-sm">{addr.street}</p>
@@ -322,7 +322,7 @@ const onSubmitProfile = (data) => {
                           </div>
                         </div>
                         <div className="flex justify-between items-end text-sm font-medium">
-                          <span>Họ và Tên: {user.name}</span>
+                          <span>Họ và Tên: {user.fullName}</span>
                           <span>Điểm: {totalPoints}</span>
                         </div>
                       </div>
@@ -412,7 +412,7 @@ const onSubmitProfile = (data) => {
             <form onSubmit={handleSaveAddress} className="p-6 space-y-5">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <input type="text" placeholder="Họ và tên" required value={addressForm.name} onChange={e => setAddressForm({...addressForm, name: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 focus:bg-white" />
+                  <input type="text" placeholder="Họ và tên" required value={addressForm.fullName} onChange={e => setAddressForm({...addressForm, fullName: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 focus:bg-white" />
                 </div>
                 <div>
                   <input type="text" placeholder="Số điện thoại" required pattern="[0-9]{10}" value={addressForm.phone} onChange={e => setAddressForm({...addressForm, phone: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 focus:bg-white" />

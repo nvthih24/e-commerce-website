@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom'; // <-- Nhớ import thêm useNavigate
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { mockProducts } from '../data/mockData';
 
 export default function ProductDetail() {
   const { id } = useParams();
-  const navigate = useNavigate(); // <-- Khởi tạo useNavigate
+  const navigate = useNavigate();
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
 

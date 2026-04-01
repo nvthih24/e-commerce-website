@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
 import { categories } from '../data/mockData';
+import axiosClient from '../api/axiosClient';
 
 export default function Header() {
   const { totalItems } = useCart();
@@ -11,7 +12,20 @@ export default function Header() {
   const { wishlist } = useWishlist();
 
   const [keyword, setKeyword] = useState('');
+  const [categories, setCategories] = useState([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+      const fetchCategories = async () => {
+        try {
+          const data = await axiosClient.get('/category');
+          setCategories(data);
+        } catch (error) {
+          console.error("Lỗi lấy danh mục:", error);
+        }
+      };
+      fetchCategories();
+    }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -19,6 +33,15 @@ export default function Header() {
       navigate(`/search?q=${encodeURIComponent(keyword.trim())}`);
       setKeyword('');
     }
+  };
+
+const getIconForCategory = (name) => {
+    const lowerName = name.toLowerCase();
+    if (lowerName.includes('laptop') || lowerName.includes('máy tính')) return '💻';
+    if (lowerName.includes('điện thoại') || lowerName.includes('phone')) return '📱';
+    if (lowerName.includes('âm thanh') || lowerName.includes('tai nghe')) return '🎧';
+    if (lowerName.includes('phụ kiện')) return '🖱️';
+    return '🏷️';
   };
 
   return (
@@ -112,7 +135,7 @@ export default function Header() {
               <span className="hidden sm:block font-bold text-gray-700">{user.name}</span>
             </Link>
           ) : (
-            <Link to="/login" className="bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-xl font-bold transition-colors border border-blue-100 shadow-sm whitespace-nowrap">
+            <Link to="login" className="bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-xl font-bold transition-colors border border-blue-100 shadow-sm whitespace-nowrap">
               Đăng nhập
             </Link>
           )}

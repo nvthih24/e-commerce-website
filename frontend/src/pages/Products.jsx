@@ -1,24 +1,50 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
-import { mockProducts, categories } from '../data/mockData';
+import axiosClient from '../api/axiosClient';
 
 export default function Products() {
-  const [sortOption, setSortOption] = useState('newest');
-const [searchParams] = useSearchParams();
-const categoryFilter = searchParams.get('category');
+    const [sortOption, setSortOption] = useState('newest');
+    const [searchParams] = useSearchParams();
+    const categoryFilter = searchParams.get('category');
 
-  // Bước 1: Lọc sản phẩm theo danh mục (nếu có click chọn)
-    let filteredProducts = mockProducts;
+    const [products, setProducts] = useState([]);
+      const [categories, setCategories] = useState([]);
+      const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+          setIsLoading(true);
+          try {
+            // Tạm thời gọi size=100 để lấy nhiều sản phẩm về FE tự lọc
+            const [productsRes, categoriesRes] = await Promise.all([
+              axiosClient.get('/products?size=100'),
+              axiosClient.get('/categories')
+            ]);
+
+            // Backend mới trả về phân trang, nên danh sách nằm trong biến 'content'
+            const allProducts = productsRes.content || productsRes || [];
+            setProducts(allProducts);
+            setCategories(categoriesRes || []);
+          } catch (error) {
+            console.error("Lỗi lấy dữ liệu trang Products:", error);
+          } finally {
+            setIsLoading(false);
+          }
+        };
+        fetchData();
+      }, []);
+
+    let filteredProducts = products;
     if (categoryFilter) {
-      filteredProducts = mockProducts.filter(p => p.category === categoryFilter);
+      filteredProducts = products.filter(p => p.category === categoryFilter);
     }
 
     // Bước 2: Sắp xếp các sản phẩm đã lọc
     const sortedProducts = [...filteredProducts].sort((a, b) => {
       if (sortOption === 'price-asc') return a.price - b.price;
       if (sortOption === 'price-desc') return b.price - a.price;
-      return b.id - a.id;
+      return b.id > a.id ? 1 : -1;
     });
 
     // Tìm tên danh mục để in ra tiêu đề cho xịn
@@ -31,7 +57,6 @@ const categoryFilter = searchParams.get('category');
       <nav className="text-sm text-gray-500 mb-6">
               <Link to="/" className="hover:text-blue-600 transition-colors">Trang chủ</Link>
               <span className="mx-2">/</span>
-              {/* Nếu có lọc thì in ra Tên Danh Mục, không thì in ra Tất cả sản phẩm */}
               {categoryFilter ? (
                 <>
                   <Link to="/products" className="hover:text-blue-600 transition-colors">Tất cả sản phẩm</Link>
@@ -64,11 +89,25 @@ const categoryFilter = searchParams.get('category');
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {sortedProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
+{isLoading ? (
+        <div className="flex justify-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
+        </div>
+      ) : sortedProducts.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {sortedProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-20 bg-gray-50 rounded-2xl border border-gray-100">
+           <span className="text-4xl block mb-4">📭</span>
+           <p className="text-gray-600 font-medium text-lg">Chưa có sản phẩm nào trong danh mục này.</p>
+           <Link to="/products" className="inline-block mt-4 text-blue-600 font-bold hover:underline">
+             &larr; Xem tất cả sản phẩm
+           </Link>
+        </div>
+      )}
     </div>
   );
 }

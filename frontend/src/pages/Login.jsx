@@ -23,17 +23,22 @@ export default function Login() {
           // 1. GỌI API ĐĂNG NHẬP
           // ==========================================
           const res = await axiosClient.post('/auth/login', {
-            username: data.phone,
+            phone: data.phone,
             password: data.password
           });
 
-          const token = res.token;
+          const token = res.accessToken;
+
+          localStorage.setItem('techstore_token', token);
+
+          const profile = await axiosClient.get('/user/profile');
 
           // Khởi tạo thông tin User để lưu vào Frontend
           const userData = {
-            name: data.phone,
-            phone: data.phone,
-            avatar: `https://ui-avatars.com/api/?name=${data.phone}&background=0D8ABC&color=fff`
+            fullName: profile.fullName,
+            phone: profile.phone,
+            email: profile.email || '',
+            avatar: `https://ui-avatars.com/api/?name=${profile.fullName}&background=0D8ABC&color=fff`
           };
 
           login(userData, token); // Lưu vào Context
@@ -47,10 +52,10 @@ export default function Login() {
           // 2. GỌI API ĐĂNG KÝ
           // ==========================================
           await axiosClient.post('/auth/register', {
-            username: data.phone,
+            fullName: data.fullName,
             phone: data.phone,
             password: data.password,
-            name: data.fullName
+            email: data.email
           });
 
           toast.success('Đăng ký thành công! Vui lòng đăng nhập lại. 🚀');
@@ -60,8 +65,17 @@ export default function Login() {
 
       } catch (error) {
         console.error("Lỗi API:", error);
-        // Hiển thị câu báo lỗi từ Backend (nếu có), không thì báo chung chung
-        const errorMsg = error.response?.data || 'Sai thông tin hoặc có lỗi xảy ra!';
+        let errorMsg = 'Sai thông tin hoặc có lỗi xảy ra!';
+
+        if (error.response?.data) {
+            if (typeof error.response.data === 'string') {
+                            errorMsg = error.response.data;
+                        } else if (error.response.data.message) {
+                            errorMsg = error.response.data.message;
+                        } else if (error.response.data.error) {
+                            errorMsg = error.response.data.error;
+                        }
+        }
         toast.error(errorMsg);
       } finally {
         setIsLoading(false); // Tắt hiệu ứng xoay xoay
@@ -105,8 +119,10 @@ export default function Login() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+
           {/* Form Đăng Ký thì hiện thêm ô Họ Tên */}
           {!isLogin && (
+              <>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Họ và Tên</label>
               <input
@@ -117,6 +133,23 @@ export default function Login() {
               />
               {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName.message}</p>}
             </div>
+            <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Địa chỉ Email</label>
+                            <input
+                              type="email"
+                              placeholder="Ví dụ: email@techstore.com"
+                              {...register("email", {
+                                required: "Vui lòng nhập email",
+                                pattern: {
+                                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                  message: "Email không hợp lệ"
+                                }
+                              })}
+                              className={`w-full px-4 py-3 rounded-xl border ${errors.email ? 'border-red-500' : 'border-gray-200 focus:border-blue-500'} focus:outline-none focus:ring-2 focus:ring-blue-100 bg-gray-50 focus:bg-white`}
+                            />
+                            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
+                          </div>
+                          </>
           )}
 
           {/* Ô SỐ ĐIỆN THOẠI (Dùng chung cho cả Đăng nhập & Đăng ký) */}
