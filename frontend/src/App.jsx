@@ -8,12 +8,20 @@ import Account from "./pages/Account";
 import Search from './pages/Search';
 import Products from './pages/Products';
 
+import AdminLayout from "./layouts/AdminLayout";
+import Dashboard from "./pages/admin/Dashboard";
+import AdminProducts from "./pages/admin/AdminProducts";
+import AdminCategories from "./pages/admin/AdminCategories";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminOrders from "./pages/admin/AdminOrders";
+
 function App() {
   return (
     <Routes>
-      {/* Route cha dùng MainLayout */}
+      {/* ========================================== */}
+      {/* GIAO DIỆN KHÁCH HÀNG (Dùng chung MainLayout) */}
+      {/* ========================================== */}
       <Route path="/" element={<MainLayout />}>
-        {/* Các Route con sẽ được render vào vị trí <Outlet /> trong MainLayout */}
         <Route index element={<Home />} />
         <Route path="cart" element={<Cart />} />
         <Route path="product/:id" element={<ProductDetail />} />
@@ -22,6 +30,16 @@ function App() {
         <Route path="search" element={<Search />} />
         <Route path="products" element={<Products />} />
       </Route>
+
+
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<Dashboard />} />
+        <Route path="products" element={<AdminProducts />} />
+        <Route path="categories" element={<AdminCategories />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="orders" element={<AdminOrders />} />
+      </Route>
+
     </Routes>
   );
 }

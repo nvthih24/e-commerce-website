@@ -1,15 +1,36 @@
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
-import { mockProducts } from '../data/mockData';
+import axiosClient from '../api/axiosClient';
 
 export default function Search() {
   const [searchParams] = useSearchParams();
-  const query = searchParams.get('q') || ''; // Lấy chữ 'q' trên đường dẫn xuống
+  const query = searchParams.get('q') || '';
+  
+  const [searchResults, setSearchResults] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Lọc sản phẩm: Ép tất cả về chữ thường (toLowerCase) để tìm kiếm không phân biệt hoa thường
-  const searchResults = mockProducts.filter(product =>
-    product.name.toLowerCase().includes(query.toLowerCase())
-  );
+  useEffect(() => {
+    const fetchSearch = async () => {
+      try {
+        setIsLoading(true);
+        // Gọi API lấy toàn bộ sản phẩm (hoặc viết thêm 1 API search riêng ở BE)
+        const res = await axiosClient.get('/products');
+        const allProducts = res.content || res.data || res;
+        
+        // Frontend tự lọc kết quả
+        const filtered = allProducts.filter(p => 
+          p.name.toLowerCase().includes(query.toLowerCase())
+        );
+        setSearchResults(filtered);
+      } catch (error) {
+        console.error("Lỗi tìm kiếm:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    if (query) fetchSearch();
+  }, [query]);
 
   return (
     <div className="pb-10 min-h-[60vh]">

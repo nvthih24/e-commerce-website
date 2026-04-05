@@ -4,6 +4,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
+import axiosClient from '../api/axiosClient';
 
 export default function Cart() {
   const {
@@ -47,16 +48,49 @@ export default function Cart() {
   };
 
   // Hàm xử lý khi bấm XÁC NHẬN ĐẶT HÀNG
-  const onCheckoutSubmit = (data) => {
-    console.log("Dữ liệu đơn hàng:", { items: selectedItems, total: cartTotal, customer: data });
+  const onCheckoutSubmit = async (data) => {
+    // setIsCheckoutOpen(true);
 
-    // Đóng modal, báo thành công và có thể chuyển hướng về trang Account tab Đơn hàng
-    setIsCheckoutOpen(false);
-    toast.success('🎉 Đặt hàng thành công! Đơn hàng đang được xử lý.');
-    reset();
+    try {
+      const orderPayload = {
+        userId: user?.id || "", 
+        fullName: data.fullName,
+        phone: data.phone,
+        address: data.address,
+        paymentMethod: data.paymentMethod,
+        totalAmount: cartTotal,
+        
+        // 2. Map lại mảng sản phẩm đang tick chọn
+        items: selectedItems.map(item => ({
+          // Lấy ID gốc để BE trừ kho (cắt bỏ phần đuôi biến thể - màu sắc)
+          productId: item.id.split('-')[0], 
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          imageUrl: item.imageUrl || item.image
+        }))
+      };
 
-    // (Tùy chọn) Chuyển hướng về trang quản lý đơn hàng sau 1.5s
-    // setTimeout(() => navigate('/account', { state: { tab: 'orders' } }), 1500);
+      // 3. Gọi API chốt đơn! 🚀
+      await axiosClient.post('/orders', orderPayload);
+
+      // 4. Thành công: Xóa các món đã thanh toán khỏi giỏ hàng
+      selectedItems.forEach(item => removeFromCart(item.id));
+
+      // 5. Đóng Modal và thông báo
+      setIsCheckoutOpen(false);
+      toast.success('🎉 Đặt hàng thành công! Đơn hàng đang được xử lý.');
+      reset();
+
+      // (Tùy chọn) Chuyển hướng qua trang Account để xem lịch sử mua hàng
+      // setTimeout(() => navigate('/account', { state: { tab: 'orders' } }), 1500);
+
+    } catch (error) {
+      console.error("Lỗi đặt hàng:", error);
+      // Bắt lỗi từ Backend trả về (Ví dụ: "Sản phẩm A đã hết hàng")
+      const errorMsg = error.response?.data?.message || error.response?.data || "Có lỗi xảy ra khi đặt hàng!";
+      toast.error(`❌ ${errorMsg}`);
+    }
   };
 
   // Giao diện khi giỏ hàng trống
@@ -106,7 +140,7 @@ export default function Cart() {
                       onChange={() => toggleItemSelection(item.id)}
                       className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer shrink-0"
                     />
-                    <img src={item.image} alt={item.name} className="w-20 h-20 object-cover rounded-lg bg-gray-50 border border-gray-100 shrink-0" />
+                    <img src={item.imageUrl} alt={item.name} className="w-20 h-20 object-cover rounded-lg bg-gray-50 border border-gray-100 shrink-0" />
                     <div>
                       <Link to={`/product/${item.id}`} className="font-medium text-gray-800 hover:text-blue-600 line-clamp-2">
                         {item.name}
@@ -249,7 +283,7 @@ export default function Cart() {
               <div className="flex-1 overflow-y-auto pr-2 space-y-4 mb-6 custom-scrollbar max-h-[300px]">
                 {selectedItems.map(item => (
                   <div key={item.id} className="flex gap-4 items-center">
-                    <img src={item.image} alt={item.name} className="w-16 h-16 rounded-lg object-cover border border-gray-200 bg-white" />
+                    <img src={item.imageUrl} alt={item.name} className="w-16 h-16 rounded-lg object-cover border border-gray-200 bg-white" />
                     <div className="flex-1">
                       <h4 className="text-sm font-medium text-gray-800 line-clamp-1">{item.name}</h4>
                       <p className="text-xs text-gray-500 mt-1">SL: {item.quantity}</p>

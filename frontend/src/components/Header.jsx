@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
-import { categories } from '../data/mockData';
+import { categories } from '../data/mockdata';
 import axiosClient from '../api/axiosClient';
 
 export default function Header() {

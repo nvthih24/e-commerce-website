@@ -22,7 +22,7 @@ export default function ProductCard({ product }) {
         className="block overflow-hidden relative group"
       >
         <img
-          src={product.image}
+          src={product.imageUrl}
           alt={product.name}
           className="w-full h-48 object-cover transform group-hover:scale-105 transition-transform duration-300 bg-gray-50 object-center"
         />
