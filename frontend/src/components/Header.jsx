@@ -132,7 +132,7 @@ const getIconForCategory = (name) => {
           {user ? (
             <Link to="/account" className="flex items-center gap-2 hover:bg-gray-50 px-2 py-1.5 rounded-full transition-colors border border-transparent hover:border-gray-100 whitespace-nowrap">
               <img src={user.avatar} alt="Avatar" className="w-9 h-9 rounded-full shadow-sm border border-gray-200 bg-white shrink-0" />
-              <span className="hidden sm:block font-bold text-gray-700">{user.name}</span>
+              <span className="hidden sm:block font-bold text-gray-700">{user.fullName}</span>
             </Link>
           ) : (
             <Link to="login" className="bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-xl font-bold transition-colors border border-blue-100 shadow-sm whitespace-nowrap">
