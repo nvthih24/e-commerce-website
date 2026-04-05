@@ -37,7 +37,7 @@ export default function Products() {
 
     let filteredProducts = products;
     if (categoryFilter) {
-      filteredProducts = products.filter(p => p.category === categoryFilter);
+      filteredProducts = products.filter(p => p.categoryId === categoryFilter);
     }
 
     // Bước 2: Sắp xếp các sản phẩm đã lọc

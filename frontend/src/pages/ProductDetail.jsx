@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
-import { mockProducts } from '../data/mockData';
+import axiosClient from '../api/axiosClient';
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -10,22 +10,38 @@ export default function ProductDetail() {
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
 
-  const product = mockProducts.find((p) => p.id === parseInt(id));
+  const [product, setProduct] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
   const [isSpecsModalOpen, setIsSpecsModalOpen] = useState(false);
 
+  // API lay chi tiết sp 
   useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        setIsLoading(true);
+        const res = await axiosClient.get(`/products/${id}`);
+        setProduct(res.data || res); // Tùy cấu trúc axios của bạn
+      } catch (error) {
+        console.error("Lỗi lấy chi tiết sản phẩm:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProduct();
+  }, [id]);
+
+useEffect(() => {
     if (product) {
       if (product.variants?.length > 0) setSelectedVariant(product.variants[0]);
       if (product.colors?.length > 0) setSelectedColor(product.colors[0]);
     }
   }, [product]);
 
-  if (!product) {
-    return <div className="text-center py-20 text-2xl font-bold text-gray-500">Sản phẩm không tồn tại! 🥲</div>;
-  }
+  if (isLoading) return <div className="text-center py-20">Đang tải dữ liệu...</div>;
+  if (!product) return <div className="text-center py-20 text-2xl font-bold text-gray-500">Sản phẩm không tồn tại! 🥲</div>;
 
   const isWished = isInWishlist(product.id);
   const currentPrice = product.price + (selectedVariant ? selectedVariant.priceOffset : 0);
@@ -67,7 +83,7 @@ export default function ProductDetail() {
           {/* CỘT TRÁI: HÌNH ẢNH SẢN PHẨM */}
           <div className="w-full md:w-5/12 shrink-0">
             <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100 relative group overflow-hidden">
-              <img src={product.image} alt={product.name} className="w-full h-auto object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500" />
+              <img src={product.imageUrl} alt={product.name} className="w-full h-auto object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500" />
               {product.discount > 0 && (
                 <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-md">
                   Giảm {product.discount}%
@@ -77,7 +93,7 @@ export default function ProductDetail() {
             <div className="flex gap-4 mt-4 overflow-x-auto pb-2 custom-scrollbar">
                {[1,2,3,4].map(i => (
                  <div key={i} className={`w-20 h-20 rounded-xl border-2 p-2 cursor-pointer bg-gray-50 shrink-0 ${i === 1 ? 'border-blue-500' : 'border-gray-200 hover:border-blue-300'}`}>
-                   <img src={product.image} className="w-full h-full object-contain mix-blend-multiply" />
+                   <img src={product.imageUrl} className="w-full h-full object-contain mix-blend-multiply" />
                  </div>
                ))}
             </div>
@@ -169,7 +185,7 @@ export default function ProductDetail() {
         <div className="lg:col-span-8 bg-white p-6 md:p-10 rounded-3xl shadow-sm border border-gray-100">
            <h2 className="text-2xl font-bold text-gray-800 mb-6 pb-4 border-b border-gray-100">Đặc điểm nổi bật</h2>
            <p className="text-gray-600 leading-relaxed mb-6">{product.description}</p>
-           <img src={product.image} className="w-full rounded-2xl mb-6 bg-gray-50 border border-gray-100 object-cover h-64 mix-blend-multiply" />
+           <img src={product.imageUrl} className="w-full rounded-2xl mb-6 bg-gray-50 border border-gray-100 object-cover h-64 mix-blend-multiply" />
            <p className="text-gray-600 leading-relaxed">Sản phẩm được tối ưu hóa để mang lại trải nghiệm tốt nhất cho người dùng...</p>
         </div>
 
@@ -178,7 +194,7 @@ export default function ProductDetail() {
             <span>⚙️</span> Thông số kỹ thuật
           </h2>
           <div className="space-y-0">
-            {product.specs.slice(0, 5).map((spec, index) => (
+              {(Array.isArray(product.specs) ? product.specs : []).slice(0, 5).map((spec, index) => (
               <div key={index} className={`flex flex-col sm:flex-row py-3 px-4 ${index % 2 === 0 ? 'bg-gray-50 rounded-xl' : ''}`}>
                 <span className="sm:w-1/3 text-gray-500 text-sm font-medium">{spec.label}</span>
                 <span className="sm:w-2/3 text-gray-800 text-sm font-medium mt-1 sm:mt-0">{spec.value}</span>
@@ -210,7 +226,7 @@ export default function ProductDetail() {
             </div>
             <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar flex-1">
               <div className="space-y-0">
-                {product.specs.map((spec, index) => (
+                {(Array.isArray(product.specs) ? product.specs : []).map((spec, index) => (
                   <div key={index} className={`flex flex-col sm:flex-row py-4 px-5 border-b border-gray-100 ${index % 2 === 0 ? 'bg-gray-50 rounded-xl' : 'bg-white'}`}>
                     <span className="sm:w-2/5 text-gray-500 text-sm font-medium pr-4">{spec.label}</span>
                     <span className="sm:w-3/5 text-gray-800 text-sm font-bold mt-1.5 sm:mt-0 leading-relaxed">{spec.value}</span>

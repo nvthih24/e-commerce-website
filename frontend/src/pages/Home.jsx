@@ -24,12 +24,12 @@ const mockBanners = [
 
 export default function Home() {
   const [currentBanner, setCurrentBanner] = useState(0);
-
+  
   const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
+useEffect(() => {
         const fetchData = async () => {
           try {
             setIsLoading(true);
@@ -38,8 +38,21 @@ export default function Home() {
               axiosClient.get('/products'),
               axiosClient.get('/categories')
             ]);
-            setProducts(productsData);
-            setCategories(categoriesData);
+            
+            // 1. XỬ LÝ SẢN PHẨM: Trích xuất mảng từ thuộc tính 'content' (nếu có)
+            const allProducts = productsData.content || productsData.data || productsData;
+            
+            // Ép kiểu chắc chắn là mảng, sau đó cắt lấy 8 sản phẩm đầu tiên làm Nổi bật
+            if (Array.isArray(allProducts)) {
+               setProducts(allProducts.slice(0, 8));
+            } else {
+               setProducts([]);
+            }
+
+            // 2. XỬ LÝ DANH MỤC: (Tương tự)
+            const allCategories = categoriesData.content || categoriesData.data || categoriesData;
+            setCategories(Array.isArray(allCategories) ? allCategories : []);
+
           } catch (error) {
             console.error("Lỗi lấy dữ liệu trang chủ:", error);
           } finally {

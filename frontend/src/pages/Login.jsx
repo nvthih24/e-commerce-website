@@ -33,19 +33,28 @@ export default function Login() {
 
           const profile = await axiosClient.get('/user/profile');
 
+          localStorage.setItem('role', profile.role);
+
           // Khởi tạo thông tin User để lưu vào Frontend
           const userData = {
             fullName: profile.fullName,
             phone: profile.phone,
             email: profile.email || '',
+            role: profile.role,
             avatar: `https://ui-avatars.com/api/?name=${profile.fullName}&background=0D8ABC&color=fff`
           };
 
           login(userData, token); // Lưu vào Context
           toast.success('Đăng nhập thành công! 🎉');
 
+          if (profile.role === 'ADMIN') {
+            setTimeout(() => navigate('/admin'), 500); 
+          } else {
+
           const destination = location.state?.from || '/';
           setTimeout(() => navigate(destination, { state: location.state }), 500);
+
+          }
 
         } else {
           // ==========================================
