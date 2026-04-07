@@ -29,7 +29,7 @@ export default function Home() {
     const [categories, setCategories] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-useEffect(() => {
+    useEffect(() => {
         const fetchData = async () => {
           try {
             setIsLoading(true);

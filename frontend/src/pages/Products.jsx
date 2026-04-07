@@ -25,7 +25,7 @@ export default function Products() {
             // Backend mới trả về phân trang, nên danh sách nằm trong biến 'content'
             const allProducts = productsRes.content || productsRes || [];
             setProducts(allProducts);
-            setCategories(categoriesRes || []);
+            setCategories(categoriesRes.data || categoriesRes)
           } catch (error) {
             console.error("Lỗi lấy dữ liệu trang Products:", error);
           } finally {

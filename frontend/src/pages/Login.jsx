@@ -15,81 +15,81 @@ export default function Login() {
   const { register, handleSubmit, formState: { errors }, reset } = useForm();
 
   const onSubmit = async (data) => {
-      setIsLoading(true);
+        setIsLoading(true);
 
-      try {
-        if (isLogin) {
-          // ==========================================
-          // 1. GỌI API ĐĂNG NHẬP
-          // ==========================================
-          const res = await axiosClient.post('/auth/login', {
-            phone: data.phone,
-            password: data.password
-          });
+        try {
+          if (isLogin) {
+            // ==========================================
+            // 1. GỌI API ĐĂNG NHẬP
+            // ==========================================
+            const res = await axiosClient.post('/auth/login', {
+              phone: data.phone,
+              password: data.password
+            });
 
-          const token = res.accessToken;
+            // SỬA ĐIỂM 1: Nhận đúng biến 'token' từ BE trả về
+            const token = res.token;
 
-          localStorage.setItem('techstore_token', token);
+            localStorage.setItem('techstore_token', token);
 
-          const profile = await axiosClient.get('/user/profile');
+            // SỬA ĐIỂM 2: Gọi đúng đường dẫn '/users/profile' (có chữ s)
+            const profile = await axiosClient.get('/users/profile');
 
-          localStorage.setItem('role', profile.role);
+            localStorage.setItem('role', profile.role);
 
-          // Khởi tạo thông tin User để lưu vào Frontend
-          const userData = {
-            fullName: profile.fullName,
-            phone: profile.phone,
-            email: profile.email || '',
-            role: profile.role,
-            avatar: `https://ui-avatars.com/api/?name=${profile.fullName}&background=0D8ABC&color=fff`
-          };
+            // Khởi tạo thông tin User để lưu vào Frontend
+            const userData = {
+              fullName: profile.name, // SỬA ĐIỂM 3: Đổi từ profile.fullName thành profile.name
+              phone: profile.phone,
+              email: profile.email || '',
+              role: profile.role,
+              avatar: profile.avatar || `https://ui-avatars.com/api/?name=${profile.name}&background=0D8ABC&color=fff`
+            };
 
-          login(userData, token); // Lưu vào Context
-          toast.success('Đăng nhập thành công! 🎉');
+            login(userData, token); // Lưu vào Context
+            toast.success('Đăng nhập thành công! 🎉');
 
-          if (profile.role === 'ADMIN') {
-            setTimeout(() => navigate('/admin'), 500); 
+            if (profile.role === 'admin') { // BE của mình dùng chữ thường 'admin'
+              setTimeout(() => navigate('/admin'), 500);
+            } else {
+              const destination = location.state?.from || '/';
+              setTimeout(() => navigate(destination, { state: location.state }), 500);
+            }
+
           } else {
+            // ==========================================
+            // 2. GỌI API ĐĂNG KÝ
+            // ==========================================
+            await axiosClient.post('/auth/register', {
+              name: data.fullName, // SỬA ĐIỂM 3: Map fullName của form vào biến name cho BE hiểu
+              phone: data.phone,
+              password: data.password,
+              email: data.email
+            });
 
-          const destination = location.state?.from || '/';
-          setTimeout(() => navigate(destination, { state: location.state }), 500);
-
+            toast.success('Đăng ký thành công! Vui lòng đăng nhập lại. 🚀');
+            setIsLogin(true);
+            reset();
           }
 
-        } else {
-          // ==========================================
-          // 2. GỌI API ĐĂNG KÝ
-          // ==========================================
-          await axiosClient.post('/auth/register', {
-            fullName: data.fullName,
-            phone: data.phone,
-            password: data.password,
-            email: data.email
-          });
+        } catch (error) {
+          console.error("Lỗi API:", error);
+          let errorMsg = 'Sai thông tin hoặc có lỗi xảy ra!';
 
-          toast.success('Đăng ký thành công! Vui lòng đăng nhập lại. 🚀');
-          setIsLogin(true);
-          reset();
+          if (error.response?.data) {
+              if (typeof error.response.data === 'string') {
+                  errorMsg = error.response.data;
+              } else if (error.response.data.message) {
+                  errorMsg = error.response.data.message;
+              } else if (error.response.data.error) {
+                  errorMsg = error.response.data.error;
+              }
+          }
+          toast.error(errorMsg);
+        } finally {
+          setIsLoading(false);
         }
-
-      } catch (error) {
-        console.error("Lỗi API:", error);
-        let errorMsg = 'Sai thông tin hoặc có lỗi xảy ra!';
-
-        if (error.response?.data) {
-            if (typeof error.response.data === 'string') {
-                            errorMsg = error.response.data;
-                        } else if (error.response.data.message) {
-                            errorMsg = error.response.data.message;
-                        } else if (error.response.data.error) {
-                            errorMsg = error.response.data.error;
-                        }
-        }
-        toast.error(errorMsg);
-      } finally {
-        setIsLoading(false); // Tắt hiệu ứng xoay xoay
-      }
-    };
+      };
 
   return (
     <div className="min-h-[70vh] flex items-center justify-center py-10 px-4">

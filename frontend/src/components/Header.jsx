@@ -18,8 +18,9 @@ export default function Header() {
   useEffect(() => {
       const fetchCategories = async () => {
         try {
-          const data = await axiosClient.get('/category');
-          setCategories(data);
+          const res = await axiosClient.get('/categories');
+
+          setCategories(res);
         } catch (error) {
           console.error("Lỗi lấy danh mục:", error);
         }
