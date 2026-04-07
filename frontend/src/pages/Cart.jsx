@@ -18,6 +18,35 @@ export default function Cart() {
   // State quản lý bật/tắt Modal Checkout
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
+  // --- STATE QUẢN LÝ MÃ GIẢM GIÁ ---
+    const [couponCode, setCouponCode] = useState('');
+    const [discountAmount, setDiscountAmount] = useState(0);
+    // Tổng tiền cuối cùng sau khi trừ giảm giá
+    const finalCartTotal = cartTotal - discountAmount;
+
+    // --- HÀM XỬ LÝ ÁP DỤNG MÃ ---
+    const handleApplyCoupon = async () => {
+      if (!couponCode) return toast.error('Vui lòng nhập mã giảm giá! 🏷️');
+      if (!user) return toast.error('Vui lòng đăng nhập để sử dụng mã! 🔒');
+
+      try {
+        // Gọi API BE mà ông đã viết
+        const res = await axiosClient.post('/coupons/apply', {
+          code: couponCode,
+          cartTotal: cartTotal
+        });
+
+        // Nếu BE trả về thành công
+        setDiscountAmount(res.discountAmount);
+        toast.success(`🎉 ${res.message} (Giảm ${formatPrice(res.discountAmount)})`);
+      } catch (error) {
+        // Bắt lỗi từ BE (Hết hạn, không đủ điều kiện, v.v.)
+        setDiscountAmount(0);
+        const errorMsg = error.response?.data?.message || "Mã giảm giá không hợp lệ!";
+        toast.error(`❌ ${errorMsg}`);
+      }
+    };
+
   // Lọc ra danh sách các món đang được tick chọn
   const selectedItems = cart.filter(item => item.isSelected);
 
@@ -187,14 +216,51 @@ export default function Cart() {
               </div>
               <div className="flex justify-between">
                 <span>Phí giao hàng</span>
-                <span className="font-medium text-gray-800">Miễn phí</span>
+                <div className="space-y-4 mb-6 text-gray-600">
+                              <div className="flex justify-between">
+                                <span>Tạm tính ({selectedItemsCount} sản phẩm)</span>
+                                <span className="font-medium text-gray-800">{formatPrice(cartTotal)}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Phí giao hàng</span>
+                                <span className="font-medium text-gray-800">Miễn phí</span>
+                              </div>
+
+                              {/* ===== CHÈN THÊM KHỐI MÃ GIẢM GIÁ Ở ĐÂY ===== */}
+                              <div className="pt-4 border-t border-gray-100">
+                                <div className="flex gap-2 mb-3">
+                                  <input
+                                    type="text"
+                                    value={couponCode}
+                                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                                    placeholder="Nhập mã giảm giá..."
+                                    className="flex-1 px-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 uppercase"
+                                  />
+                                  <button
+                                    onClick={handleApplyCoupon}
+                                    disabled={cartTotal === 0}
+                                    className="px-4 py-2 bg-gray-800 text-white text-sm font-bold rounded-lg hover:bg-gray-700 disabled:bg-gray-300 transition-colors"
+                                  >
+                                    Áp dụng
+                                  </button>
+                                </div>
+
+                                {/* Hiện dòng này nếu có giảm giá */}
+                                {discountAmount > 0 && (
+                                  <div className="flex justify-between text-green-600 font-medium animate-fadeIn">
+                                    <span>Giảm giá (Coupon)</span>
+                                    <span>- {formatPrice(discountAmount)}</span>
+                                  </div>
+                                )}
+                              </div>
+                              </div>
               </div>
             </div>
 
             <div className="border-t border-gray-100 pt-4 mb-8">
               <div className="flex justify-between items-center mb-1">
                 <span className="font-bold text-gray-800">Tổng cộng</span>
-                <span className="text-2xl font-bold text-red-600">{formatPrice(cartTotal)}</span>
+                <span className="text-2xl font-bold text-red-600">{formatPrice(finalCartTotal)}</span>
               </div>
             </div>
 
