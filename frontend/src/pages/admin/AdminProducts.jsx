@@ -36,27 +36,14 @@ export default function AdminProducts() {
     }, []);
 
     const fetchProducts = async () => {
-        try {
-            setIsLoading(true);
-            
-            const [productRes, categoryRes] = await Promise.all([
-                axiosClient.get('/products'),
-                axiosClient.get('/categories')
-            ]);
-            
-            setProducts(productRes.content || productRes.data || productRes);
-            setCategories(categoryRes); // Lưu categories
-            
-            if (categoryRes.length > 0) {
-                setFormData(prev => ({ ...prev, categoryId: categoryRes[0].id }));
-            }
-        } catch (error) {
-            console.error("Lỗi lấy sản phẩm:", error);
-            toast.error("Không thể tải danh sách sản phẩm");
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    try {
+        setIsLoading(true);
+        const productsData = await axiosClient.get('/products');
+        setProducts(Array.isArray(productsData) ? productsData : []);
+    } catch (error) {
+        toast.error("Lỗi tải sản phẩm");
+    } finally { setIsLoading(false); }
+};
 
     // ==========================================
     // HÀM MỞ MODAL (DÙNG CHUNG CHO THÊM/SỬA)
@@ -106,68 +93,37 @@ export default function AdminProducts() {
     // HÀM XỬ LÝ SUBMIT FORM (XỬ LÝ CẢ THÊM & SỬA)
     // ==========================================
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        
-        // Validation cơ bản khi THÊM MỚI (bắt buộc ảnh)
-        if (!editingProduct && !imageFile) {
-            toast.error("Vui lòng chọn ảnh sản phẩm!");
-            return;
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    const submitData = new FormData();
+    submitData.append("name", formData.name);
+    submitData.append("price", formData.price);
+    
+    if (imageFile) {
+        // 'image' phải trùng với upload.single('image') trong productRoutes.js
+        submitData.append("image", imageFile); 
+    }
+
+    try {
+        if (editingProduct) {
+            // Dùng _id cho MongoDB
+            await axiosClient.put(`/products/${editingProduct._id}`, submitData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            toast.success("Cập nhật thành công!");
+        } else {
+            await axiosClient.post('/products', submitData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            toast.success("Thêm thành công!");
         }
-
-        setIsSubmitting(true);
-        const submitData = new FormData();
-
-        // 1. Chuẩn bị Object dữ liệu sản phẩm (Chung cho cả 2 chế độ)
-        const productObject = {
-            name: formData.name,
-            price: Number(formData.price),
-            stock: Number(formData.stock),
-            categoryId: formData.categoryId,
-            description: formData.description,
-            // Xử lý chuỗi colors thành mảng
-            colors: formData.colors.split(',').map(c => c.trim()).filter(c => c !== ''),
-            specs: {}, 
-            variants: [] 
-        };
-
-        // 2. Nhét vào FormData (Thủ thuật Blob cho Spring Boot hiểu JSON)
-        submitData.append(
-            "product",
-            new Blob([JSON.stringify(productObject)], { type: "application/json" })
-        );
-
-        // 3. Xử lý Ảnh (Nếu có chọn ảnh mới)
-        if (imageFile) {
-            submitData.append("image", imageFile);
-        }
-
-        try {
-            if (editingProduct) {
-                // Chế độ: SỬA SẢN PHẨM
-                // Gọi API PUT /products/{id}
-                await axiosClient.put(`/products/${editingProduct.id}`, submitData, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
-                toast.success("Cập nhật sản phẩm thành công! ✨");
-            } else {
-                // Chế độ: THÊM MỚI
-                // Gọi API POST /products
-                await axiosClient.post('/products', submitData, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
-                toast.success("Thêm sản phẩm thành công! 🎉");
-            }
-
-            closeModal();
-            fetchProducts(); // Load lại bảng
-        } catch (error) {
-            console.error("Lỗi API Sản phẩm:", error);
-            const msg = error.response?.data?.error || "Đã có lỗi xảy ra. Vui lòng thử lại!";
-            toast.error(msg);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+        closeModal();
+        fetchProducts();
+    } catch (error) {
+        toast.error("Có lỗi xảy ra");
+    } finally { setIsSubmitting(false); }
+};
 
     // Hàm Xóa giữ nguyên
     const handleDelete = async (id) => {
@@ -220,9 +176,9 @@ export default function AdminProducts() {
                                     <tr key={item.id} className="border-b border-gray-100 hover:bg-gray-50 transition">
                                         <td className="p-4">
                                             <img 
-                                                src={item.imageUrl || 'https://via.placeholder.com/100'} 
+                                                src={item.image ? `${import.meta.env.VITE_IMAGE_URL}${item.image}` : 'https://via.placeholder.com/100'} 
                                                 alt={item.name} 
-                                                className="w-14 h-14 object-cover rounded-lg border border-gray-100"
+                                                className="w-14 h-14 object-cover rounded-lg"
                                             />
                                         </td>
                                         <td className="p-4 font-medium text-gray-800">{item.name}</td>

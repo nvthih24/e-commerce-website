@@ -30,37 +30,19 @@ export default function Home() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const fetchData = async () => {
-          try {
+    const fetchData = async () => {
+        try {
             setIsLoading(true);
-            // Chạy song song 2 API lấy Products và Categories cho lẹ
-            const [productsData, categoriesData] = await Promise.all([
-              axiosClient.get('/products'),
-              axiosClient.get('/categories')
-            ]);
-            
-            // 1. XỬ LÝ SẢN PHẨM: Trích xuất mảng từ thuộc tính 'content' (nếu có)
-            const allProducts = productsData.content || productsData.data || productsData;
-            
-            // Ép kiểu chắc chắn là mảng, sau đó cắt lấy 8 sản phẩm đầu tiên làm Nổi bật
-            if (Array.isArray(allProducts)) {
-               setProducts(allProducts.slice(0, 8));
-            } else {
-               setProducts([]);
-            }
-
-            // 2. XỬ LÝ DANH MỤC: (Tương tự)
-            const allCategories = categoriesData.content || categoriesData.data || categoriesData;
-            setCategories(Array.isArray(allCategories) ? allCategories : []);
-
-          } catch (error) {
-            console.error("Lỗi lấy dữ liệu trang chủ:", error);
-          } finally {
-            setIsLoading(false);
-          }
-        };
-        fetchData();
-      }, []);
+            const productsData = await axiosClient.get('/products');
+            // Backend trả về mảng trực tiếp
+            const allProducts = Array.isArray(productsData) ? productsData : [];
+            setProducts(allProducts.slice(0, 8));
+        } catch (error) {
+            console.error("Lỗi:", error);
+        } finally { setIsLoading(false); }
+    };
+    fetchData();
+}, []);
 
   // Hiệu ứng tự động chuyển Banner sau mỗi 4 giây
   useEffect(() => {

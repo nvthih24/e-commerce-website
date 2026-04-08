@@ -1,5 +1,5 @@
 import axios from 'axios';
-
+export const IMAGE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
 // Khởi tạo trạm trung chuyển với đường dẫn lấy từ file .env
 const axiosClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,

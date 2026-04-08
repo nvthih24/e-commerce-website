@@ -21,11 +21,10 @@ export default function ProductCard({ product }) {
         to={`/product/${product.id}`}
         className="block overflow-hidden relative group"
       >
-        <img
-          src={product.imageUrl}
-          alt={product.name}
-          className="w-full h-48 object-cover transform group-hover:scale-105 transition-transform duration-300 bg-gray-50 object-center"
-        />
+        <img 
+        src={product.image ? `${IMAGE_URL}${product.image}` : '/default-thumb.png'} 
+        alt={product.name} 
+      />
         {/* Tag giảm giá */}
         {product.discount > 0 && (
           <span className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md shadow">
