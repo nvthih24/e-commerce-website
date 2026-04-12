@@ -5,7 +5,16 @@ import { useWishlist } from "../context/WishlistContext";
 export default function ProductCard({ product }) {
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
-  const isFavorite = isInWishlist(product.id);
+
+  const productId = product._id || product.id;
+  const isFavorite = isInWishlist(productId);
+
+  let imgSrc = product.image || product.imageUrl || "https://placehold.co/400x300?text=No+Image";
+    // Nếu ảnh là file nội bộ (chưa có chữ http) thì ghép tên miền Backend vào
+    if (!imgSrc.startsWith('http') && !imgSrc.startsWith('data:')) {
+      imgSrc = `http://localhost:3000${imgSrc.startsWith('/') ? '' : '/'}${imgSrc}`;
+    }
+
   // Hàm hỗ trợ format tiền tệ chuẩn VNĐ
   const formatPrice = (price) => {
     return new Intl.NumberFormat("vi-VN", {
@@ -18,11 +27,11 @@ export default function ProductCard({ product }) {
     <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-hidden border border-gray-100 flex flex-col h-full">
       {/* Hình ảnh sản phẩm (Hiệu ứng zoom nhẹ khi hover) */}
       <Link
-        to={`/product/${product.id}`}
+        to={`/product/${productId}`}
         className="block overflow-hidden relative group"
       >
         <img
-          src={product.imageUrl}
+          src={imgSrc}
           alt={product.name}
           className="w-full h-48 object-cover transform group-hover:scale-105 transition-transform duration-300 bg-gray-50 object-center"
         />

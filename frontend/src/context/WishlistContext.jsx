@@ -17,14 +17,16 @@ export function WishlistProvider({ children }) {
 
   // Hàm xử lý Thêm/Bỏ yêu thích
   const toggleWishlist = (product) => {
+     const targetId = product._id || product.id;
+
     // 1. Kiểm tra xem sản phẩm đã có trong danh sách chưa (Dùng biến wishlist hiện tại)
-    const isExist = wishlist.find((item) => item.id === product.id);
+    const isExist = wishlist.find((item) => (item._id || item.id) === targetId);
 
     // 2. Tách phần hiện thông báo ra ngoài setWishlist
     if (isExist) {
       toast.error(`Đã bỏ ${product.name} khỏi danh sách yêu thích 💔`);
       // Xóa khỏi danh sách
-      setWishlist(wishlist.filter((item) => item.id !== product.id));
+      setWishlist(wishlist.filter((item) => (item._id || item.id) !== targetId));
     } else {
       toast.success(`Đã thêm ${product.name} vào danh sách yêu thích! ❤️`);
       // Thêm vào danh sách
@@ -34,7 +36,7 @@ export function WishlistProvider({ children }) {
 
   // Hàm kiểm tra xem sản phẩm đã được tim chưa
   const isInWishlist = (id) => {
-    return wishlist.some(item => item.id === id);
+    return wishlist.some(item => (item._id || item.id) === id);
   };
 
   return (

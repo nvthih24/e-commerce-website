@@ -152,8 +152,8 @@ export default function Home() {
                {categories.length > 0 ? (
                  categories.map((category) => (
                    <Link
-                     key={category.id}
-                     to={`/products?category=${category.id}`}
+                     key={category._id || category.id}
+                     to={`/products?category=${category._id || category.id}`}
                      className="flex items-center gap-2 bg-white border border-gray-200 hover:border-blue-500 hover:text-blue-600 hover:shadow-md px-6 py-3.5 rounded-full font-medium text-gray-700 transition-all transform hover:-translate-y-1"
                    >
                      <span className="text-2xl">{getIconForCategory(category.name)}</span>
@@ -181,7 +181,7 @@ export default function Home() {
            ) : products.length > 0 ? (
              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                {products.map((product) => (
-                 <ProductCard key={product.id} product={product} />
+                 <ProductCard key={product._id || product.id} product={product} />
                ))}
              </div>
            ) : (

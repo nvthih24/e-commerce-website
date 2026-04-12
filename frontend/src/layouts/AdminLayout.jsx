@@ -10,7 +10,7 @@ const AdminLayout = () => {
     const { logout } = useAuth();
 
     // Bảo mật FE: Nếu không phải ADMIN thì đá văng ra trang chủ
-    if (role !== 'ADMIN') {
+    if (role !== 'admin') {
         return <Navigate to="/" />;
     }
 

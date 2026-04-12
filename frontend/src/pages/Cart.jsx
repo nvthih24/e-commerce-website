@@ -12,6 +12,12 @@ export default function Cart() {
     toggleItemSelection, toggleAllSelection, isAllSelected, selectedItemsCount
   } = useCart();
 
+const getImgSrc = (img) => {
+  if (!img) return "https://placehold.co/100x100?text=No+Image";
+  if (img.startsWith('http') || img.startsWith('data:')) return img;
+  return `http://localhost:3000${img.startsWith('/') ? '' : '/'}${img}`;
+};
+
   const { user } = useAuth(); // Lấy thông tin user để tự điền form
   const navigate = useNavigate();
 
@@ -169,7 +175,7 @@ export default function Cart() {
                       onChange={() => toggleItemSelection(item.id)}
                       className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer shrink-0"
                     />
-                    <img src={item.imageUrl} alt={item.name} className="w-20 h-20 object-cover rounded-lg bg-gray-50 border border-gray-100 shrink-0" />
+                    <img src={getImgSrc(item.image || item.imageUrl)} alt={item.name} className="w-20 h-20 object-cover rounded-lg bg-gray-50 border border-gray-100 shrink-0" />
                     <div>
                       <Link to={`/product/${item.id}`} className="font-medium text-gray-800 hover:text-blue-600 line-clamp-2">
                         {item.name}

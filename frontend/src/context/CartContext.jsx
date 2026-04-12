@@ -16,14 +16,16 @@ export function CartProvider({ children }) {
 
   // 1. Hàm thêm sản phẩm (mặc định cho nó được tick sẵn: isSelected = true)
   const addToCart = (product) => {
+      const standardizedId = product._id || product.id;
+
     setCart((prevCart) => {
-      const existingItem = prevCart.find(item => item.id === product.id);
+      const existingItem = prevCart.find(item => item.id === standardizedId);
       if (existingItem) {
         return prevCart.map(item =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          item.id === standardizedId ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
-      return [...prevCart, { ...product, quantity: 1, isSelected: true }]; // <-- Thêm isSelected
+      return [...prevCart, { ...product, id: standardizedId, quantity: 1, isSelected: true }];
     });
     toast.success(`Đã thêm ${product.name} vào giỏ! 🛒`);
   };
@@ -39,14 +41,14 @@ export function CartProvider({ children }) {
     ));
   };
 
-  // 2. HÀM MỚI: Tick/Bỏ tick 1 sản phẩm
+  // 2. Tick/Bỏ tick 1 sản phẩm
   const toggleItemSelection = (id) => {
     setCart((prevCart) => prevCart.map(item =>
       item.id === id ? { ...item, isSelected: !item.isSelected } : item
     ));
   };
 
-  // 3. HÀM MỚI: Tick/Bỏ tick TẤT CẢ sản phẩm
+  // 3. Tick/Bỏ tick TẤT CẢ sản phẩm
   const toggleAllSelection = (isSelectAll) => {
     setCart((prevCart) => prevCart.map(item => ({ ...item, isSelected: isSelectAll })));
   };
